@@ -9,6 +9,7 @@ import PaymentForm from "./PaymentForm";
 import PaymentHistory from "./PaymentHistory";
 import PositionSummary from "./PositionSummary";
 import ScheduleTable from "./ScheduleTable";
+import { LoanDetailSkeleton, LoanListSkeleton, SidePanelSkeleton } from "./Skeletons";
 
 export default function LoanDashboard({ user, onSignOut }) {
   const [loans, setLoans] = useState(null);
@@ -47,65 +48,72 @@ export default function LoanDashboard({ user, onSignOut }) {
   const handlePaid = useCallback(() => setVersion((v) => v + 1), []);
 
   const current = detail?.loan.id === selectedId ? detail : null;
+  // Skeletons until the selected loan's data is on screen.
+  const loadingDetail = !error && !current && (loans === null || Boolean(selectedId));
 
+  // Desktop: a fixed, full-height three-column workspace where only the loan
+  // list, the schedule table and the payment history scroll internally.
+  // Narrow screens fall back to a normal scrolling page (see globals.css).
   return (
-    <div className="page">
+    <div className="app">
       <header className="topbar">
-        <div className="topbar-inner">
-          <Brand />
-          <div className="topbar-user">
-            <span className="avatar" aria-hidden="true">
-              {(user.email ?? "?").charAt(0).toUpperCase()}
-            </span>
-            <span className="topbar-email">{user.email}</span>
-            <button className="btn btn-ghost" onClick={onSignOut}>
-              Sign out
-            </button>
-          </div>
+        <Brand />
+        <div className="topbar-user">
+          <span className="avatar" aria-hidden="true">
+            {(user.email ?? "?").charAt(0).toUpperCase()}
+          </span>
+          <span className="topbar-email">{user.email}</span>
+          <button className="btn btn-ghost" onClick={onSignOut}>
+            Sign out
+          </button>
         </div>
       </header>
 
-      <main className="content">
-        {error && (
-          <p className="alert alert-error" role="alert">
-            {error}
-          </p>
-        )}
-
-        {loans === null && !error && <div className="skeleton" aria-label="Loading loans" />}
-        {loans?.length === 0 && (
-          <div className="card empty">
-            <h2>No loans yet</h2>
-            <p className="muted">Create one with POST /api/loans or run npm run db:seed.</p>
+      <div className="workspace">
+        <aside className="card panel loans-panel" aria-label="Loans">
+          <div className="panel-head">
+            <h2>Loans</h2>
+            {loans && <span className="muted small">{loans.length}</span>}
           </div>
-        )}
+          {loans === null && !error && <LoanListSkeleton />}
+          {loans?.length === 0 && (
+            <p className="muted small">No loans yet. Create one with POST /api/loans or run npm run db:seed.</p>
+          )}
+          {loans?.length > 0 && <LoanPicker loans={loans} selectedId={selectedId} onSelect={setSelectedId} />}
+        </aside>
 
-        {loans?.length > 0 && <LoanPicker loans={loans} selectedId={selectedId} onSelect={setSelectedId} />}
+        <main className="center-col" aria-busy={loadingDetail}>
+          {error && (
+            <p className="alert alert-error" role="alert">
+              {error}
+            </p>
+          )}
+          {loadingDetail && <LoanDetailSkeleton />}
+          {current && (
+            <>
+              <LoanOverview loan={current.loan} position={current.position} schedule={current.schedule} />
+              <PositionSummary position={current.position} />
+              <ScheduleTable schedule={current.schedule} />
+            </>
+          )}
+        </main>
 
-        {selectedId && !current && !error && <div className="skeleton tall" aria-label="Loading loan" />}
-
-        {current && (
-          <>
-            <LoanOverview loan={current.loan} position={current.position} schedule={current.schedule} />
-            <PositionSummary position={current.position} />
-            <div className="layout">
-              <aside className="side">
-                <PaymentForm
-                  key={current.loan.id}
-                  user={user}
-                  loan={current.loan}
-                  position={current.position}
-                  onPaid={handlePaid}
-                />
-                <PaymentHistory payments={current.payments} />
-              </aside>
-              <div className="main-col">
-                <ScheduleTable schedule={current.schedule} />
-              </div>
-            </div>
-          </>
-        )}
-      </main>
+        <aside className="side" aria-label="Payments">
+          {loadingDetail && <SidePanelSkeleton />}
+          {current && (
+            <>
+              <PaymentForm
+                key={current.loan.id}
+                user={user}
+                loan={current.loan}
+                position={current.position}
+                onPaid={handlePaid}
+              />
+              <PaymentHistory payments={current.payments} />
+            </>
+          )}
+        </aside>
+      </div>
     </div>
   );
 }

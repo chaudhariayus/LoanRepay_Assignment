@@ -9,7 +9,7 @@ const STATUS = {
 
 export default function ScheduleTable({ schedule }) {
   return (
-    <section className="card card-flush">
+    <section className="card card-flush schedule-card">
       <div className="section-head padded">
         <h2>Repayment schedule</h2>
         <span className="muted small">{schedule.length} monthly instalments</span>

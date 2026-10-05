@@ -2,7 +2,7 @@ import { formatDate, formatINR } from "@/lib/format";
 
 export default function PaymentHistory({ payments }) {
   return (
-    <section className="card">
+    <section className="card panel history-card">
       <h2>Payments received</h2>
       {payments.length === 0 ? (
         <p className="muted small">No payments yet.</p>

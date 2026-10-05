@@ -5,7 +5,7 @@ export default function PositionSummary({ position }) {
   const hasOverdue = isPositive(overdue.amount);
 
   return (
-    <section aria-label="Current position">
+    <section className="position" aria-label="Current position">
       <div className="section-head">
         <h2>Current position</h2>
         <span className="muted small">as of {formatDate(position.asOf)} (IST)</span>
