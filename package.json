@@ -11,6 +11,7 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:unit": "vitest run tests/unit",
     "db:migrate": "prisma migrate deploy",
     "postinstall": "prisma generate"
   },

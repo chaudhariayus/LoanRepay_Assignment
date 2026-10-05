@@ -7,5 +7,10 @@ export default defineConfig({
   },
   test: {
     include: ["tests/**/*.test.js"],
+    // Points Prisma at TEST_DATABASE_URL; integration tests skip without it.
+    setupFiles: ["tests/integration/setup.js"],
+    // Hosted Postgres round trips are slower than unit tests.
+    testTimeout: 30000,
+    hookTimeout: 30000,
   },
 });
