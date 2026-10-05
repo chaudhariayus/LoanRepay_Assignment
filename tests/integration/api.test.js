@@ -83,6 +83,17 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)("API route handlers against Post
   });
 
   it("rejects invalid input with field details and unknown loans with 404", async () => {
+    // Zero-month tenure and non-numeric values on loan creation.
+    const loansBefore = await prisma.loan.count();
+    const badLoan = await createLoan(
+      post(BASE, { principal: "two lakh", annualRatePercent: "abc", tenureMonths: 0, disbursementDate: "2026-01-15" }),
+    );
+    expect(badLoan.status).toBe(400);
+    const badLoanError = (await badLoan.json()).error;
+    expect(badLoanError.code).toBe("VALIDATION_ERROR");
+    expect(Object.keys(badLoanError.details).sort()).toEqual(["annualRatePercent", "principal", "tenureMonths"]);
+    expect(await prisma.loan.count()).toBe(loansBefore);
+
     const { data } = await newLoan();
     const id = data.loan.id;
 
