@@ -48,3 +48,6 @@ export function paiseToRupees(paise) {
   const frac = (abs % 100n).toString().padStart(2, "0");
   return `${sign}${whole}.${frac}`;
 }
+
+// 1800 -> "18.00". Basis points are hundredths of a percent, same shape as paise.
+export const bpsToPercent = paiseToRupees;

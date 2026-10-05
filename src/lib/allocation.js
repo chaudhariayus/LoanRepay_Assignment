@@ -1,5 +1,6 @@
 import { daysBetween } from "./dates.js";
 import { BusinessRuleError } from "./errors.js";
+import { paiseToRupees } from "./money.js";
 
 // Instalments here are plain objects with Number paise:
 //   { id?, seq, dueDate, principalDuePaise, interestDuePaise,
@@ -29,7 +30,7 @@ export function allocatePayment(instalments, amountPaise, paidOn) {
     throw new BusinessRuleError(
       "PAYMENT_EXCEEDS_OUTSTANDING",
       "Payment is larger than the total amount outstanding on the loan",
-      { amountPaise, totalOutstandingPaise: totalOutstanding },
+      { amount: paiseToRupees(amountPaise), totalOutstanding: paiseToRupees(totalOutstanding) },
     );
   }
 
