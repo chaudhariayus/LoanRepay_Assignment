@@ -6,6 +6,14 @@ export class ValidationError extends Error {
   }
 }
 
+// Missing, malformed, invalid or expired Firebase ID token -> 401.
+export class UnauthenticatedError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "UnauthenticatedError";
+  }
+}
+
 // Input is well-formed but breaks a business rule (e.g. paying more than is
 // owed); the route layer turns it into a 422 with this code.
 export class BusinessRuleError extends Error {
