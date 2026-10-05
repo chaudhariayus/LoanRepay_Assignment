@@ -15,6 +15,7 @@ Created by `npm run db:seed` (idempotent: fixed ids, payments replayed with fixe
 | `c0000000-0000-4000-8000-000000000003` | ₹2,00,000 · 18% · 24m · 15 Jun 2026 | **Underpaid**: ₹5,000 against a ₹9,985 instalment | ₹4,985.00 overdue |
 | `d0000000-0000-4000-8000-000000000004` | ₹1,00,000 · 12% · 6m · 5 Aug 2026 | **Overpaid**: 2× EMI settles Sep and Oct | Next due 5 Nov |
 | `e0000000-0000-4000-8000-000000000005` | ₹3,00,000 · 14% · 18m · 10 Jul 2026 | **Late**: Aug instalment paid 11 days late | Settled on 21 Aug, nothing overdue |
+| `f0000000-0000-4000-8000-000000000006` | ₹10,00,000 · 16% · 36m · 1 Jul 2026 | **Split payments**: 3 instalments paid in 2–3 parts each | Next due 1 Nov, nothing overdue |
 
 Positions move with the calendar: an unpaid instalment becomes overdue the day after its due date.
 

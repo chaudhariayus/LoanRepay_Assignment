@@ -10,7 +10,8 @@ import { paiseToRupees } from "../src/lib/money.js";
 import { prisma } from "../src/lib/prisma.js";
 import { generateSchedule } from "../src/lib/schedule.js";
 
-// Payment amounts: "inst:N" = instalment N's scheduled total, otherwise rupees.
+// Payment amounts are summed parts: "inst:N" = instalment N's scheduled
+// total; any other part is a signed amount in paise ("-2000000" = −₹20,000).
 const LOANS = [
   {
     id: "a0000000-0000-4000-8000-000000000001",
@@ -65,6 +66,26 @@ const LOANS = [
     payments: [
       { key: "seed-e-1", amount: ["inst:1"], paidOn: "2026-08-21" },
       { key: "seed-e-2", amount: ["inst:2"], paidOn: "2026-09-10" },
+    ],
+  },
+  {
+    id: "f0000000-0000-4000-8000-000000000006",
+    label: "F · split payments (each instalment paid in parts)",
+    principalPaise: 100000000,
+    annualRateBps: 1600,
+    tenureMonths: 36,
+    disbursementDate: "2026-07-01",
+    payments: [
+      // Aug instalment in two parts.
+      { key: "seed-f-1", amount: ["2000000"], paidOn: "2026-07-28" },
+      { key: "seed-f-2", amount: ["inst:1", "-2000000"], paidOn: "2026-08-01" },
+      // Sep instalment in three parts.
+      { key: "seed-f-3", amount: ["1000000"], paidOn: "2026-08-25" },
+      { key: "seed-f-4", amount: ["1500000"], paidOn: "2026-08-30" },
+      { key: "seed-f-5", amount: ["inst:2", "-2500000"], paidOn: "2026-09-01" },
+      // Oct instalment in two parts, the second three days late.
+      { key: "seed-f-6", amount: ["3000000"], paidOn: "2026-10-01" },
+      { key: "seed-f-7", amount: ["inst:3", "-3000000"], paidOn: "2026-10-04" },
     ],
   },
 ];
