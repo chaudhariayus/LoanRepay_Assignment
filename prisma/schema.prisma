@@ -1,0 +1,79 @@
+// Money is stored as BigInt paise (never float). Rates are basis points.
+// Dates that carry no time of day (disbursement, due, paid) use @db.Date.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Loan {
+  id               String   @id @default(uuid()) @db.Uuid
+  principalPaise   BigInt   @map("principal_paise")
+  annualRateBps    Int      @map("annual_rate_bps")
+  tenureMonths     Int      @map("tenure_months")
+  disbursementDate DateTime @map("disbursement_date") @db.Date
+  emiPaise         BigInt   @map("emi_paise")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  instalments Instalment[]
+  payments    Payment[]
+
+  @@map("loans")
+}
+
+model Instalment {
+  id                 String    @id @default(uuid()) @db.Uuid
+  loanId             String    @map("loan_id") @db.Uuid
+  seq                Int
+  dueDate            DateTime  @map("due_date") @db.Date
+  principalDuePaise  BigInt    @map("principal_due_paise")
+  interestDuePaise   BigInt    @map("interest_due_paise")
+  principalPaidPaise BigInt    @default(0) @map("principal_paid_paise")
+  interestPaidPaise  BigInt    @default(0) @map("interest_paid_paise")
+  settledOn          DateTime? @map("settled_on") @db.Date
+
+  loan        Loan                @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  allocations PaymentAllocation[]
+
+  @@unique([loanId, seq])
+  @@map("instalments")
+}
+
+model Payment {
+  id             String   @id @default(uuid()) @db.Uuid
+  // Required FK with Restrict: a payment cannot exist without its loan,
+  // and a loan with payments cannot be deleted.
+  loanId         String   @map("loan_id") @db.Uuid
+  amountPaise    BigInt   @map("amount_paise")
+  paidOn         DateTime @map("paid_on") @db.Date
+  idempotencyKey String   @map("idempotency_key")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  loan        Loan                @relation(fields: [loanId], references: [id], onDelete: Restrict)
+  allocations PaymentAllocation[]
+
+  @@unique([loanId, idempotencyKey])
+  @@index([loanId])
+  @@map("payments")
+}
+
+// Audit trail: how each payment was split across instalments.
+model PaymentAllocation {
+  id             String @id @default(uuid()) @db.Uuid
+  paymentId      String @map("payment_id") @db.Uuid
+  instalmentId   String @map("instalment_id") @db.Uuid
+  interestPaise  BigInt @map("interest_paise")
+  principalPaise BigInt @map("principal_paise")
+
+  payment    Payment    @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  instalment Instalment @relation(fields: [instalmentId], references: [id], onDelete: Restrict)
+
+  @@unique([paymentId, instalmentId])
+  @@index([instalmentId])
+  @@map("payment_allocations")
+}
