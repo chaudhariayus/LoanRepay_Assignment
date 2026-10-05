@@ -1,16 +1,19 @@
 import { formatDate, formatINR } from "@/lib/format";
 
-const STATUS_LABEL = {
-  PAID: "Paid",
-  PARTIALLY_PAID: "Part paid",
-  DUE: "Due",
-  OVERDUE: "Overdue",
+const STATUS = {
+  PAID: { label: "Paid", tone: "success" },
+  PARTIALLY_PAID: { label: "Part paid", tone: "warning" },
+  DUE: { label: "Upcoming", tone: "neutral" },
+  OVERDUE: { label: "Overdue", tone: "danger" },
 };
 
 export default function ScheduleTable({ schedule }) {
   return (
-    <section>
-      <h2>Repayment schedule</h2>
+    <section className="card card-flush">
+      <div className="section-head padded">
+        <h2>Repayment schedule</h2>
+        <span className="muted small">{schedule.length} monthly instalments</span>
+      </div>
       <div className="table-wrap">
         <table>
           <thead>
@@ -26,21 +29,24 @@ export default function ScheduleTable({ schedule }) {
             </tr>
           </thead>
           <tbody>
-            {schedule.map((row) => (
-              <tr key={row.seq} className={`row-${row.status.toLowerCase()}`}>
-                <td>{row.seq}</td>
-                <td>{formatDate(row.dueDate)}</td>
-                <td className="num">{formatINR(row.principalDue)}</td>
-                <td className="num">{formatINR(row.interestDue)}</td>
-                <td className="num">{formatINR(row.totalDue)}</td>
-                <td className="num">{formatINR(row.amountPaid)}</td>
-                <td className="num">{formatINR(row.remaining)}</td>
-                <td>
-                  <span className={`badge badge-${row.status.toLowerCase()}`}>{STATUS_LABEL[row.status]}</span>
-                  {row.settledOn && <span className="muted small"> on {formatDate(row.settledOn)}</span>}
-                </td>
-              </tr>
-            ))}
+            {schedule.map((row) => {
+              const status = STATUS[row.status];
+              return (
+                <tr key={row.seq} className={`row-${status.tone}`}>
+                  <td className="muted">{row.seq}</td>
+                  <td>{formatDate(row.dueDate)}</td>
+                  <td className="num">{formatINR(row.principalDue)}</td>
+                  <td className="num">{formatINR(row.interestDue)}</td>
+                  <td className="num strong">{formatINR(row.totalDue)}</td>
+                  <td className="num">{formatINR(row.amountPaid)}</td>
+                  <td className="num">{formatINR(row.remaining)}</td>
+                  <td>
+                    <span className={`pill pill-${status.tone}`}>{status.label}</span>
+                    {row.settledOn && <span className="settled">on {formatDate(row.settledOn)}</span>}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

@@ -64,22 +64,44 @@ export default function PaymentForm({ user, loan, position, onPaid }) {
     }
   }
 
+  const quickFills = [
+    isPositive(position.overdue.amount) && { label: "Overdue", amount: position.overdue.amount },
+    position.nextDue && { label: `Instalment ${position.nextDue.seq}`, amount: position.nextDue.amount },
+  ].filter(Boolean);
+
   return (
-    <section className="card">
+    <section className="card pay-card">
       <h2>Record a payment</h2>
-      <form className="payment-form" onSubmit={handleSubmit}>
-        <label>
-          Amount (₹)
-          <input
-            inputMode="decimal"
-            placeholder="9985.00"
-            required
-            value={amount}
-            onChange={edit(setAmount)}
-          />
+      <p className="muted small">Applied to the oldest unpaid instalment first, interest before principal.</p>
+
+      {quickFills.length > 0 && (
+        <div className="quick-fill">
+          {quickFills.map((q) => (
+            <button
+              key={q.label}
+              type="button"
+              className={`chip ${amount === q.amount ? "is-active" : ""}`}
+              onClick={() => {
+                keyRef.current = null;
+                setAmount(q.amount);
+              }}
+            >
+              {q.label} · {formatINR(q.amount)}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <form className="pay-form" onSubmit={handleSubmit}>
+        <label className="field">
+          <span>Amount</span>
+          <span className="input-prefix">
+            <span aria-hidden="true">₹</span>
+            <input inputMode="decimal" placeholder="9985.00" required value={amount} onChange={edit(setAmount)} />
+          </span>
         </label>
-        <label>
-          Paid on
+        <label className="field">
+          <span>Paid on</span>
           <input
             type="date"
             required
@@ -89,13 +111,13 @@ export default function PaymentForm({ user, loan, position, onPaid }) {
             onChange={edit(setPaidOn)}
           />
         </label>
-        <button type="submit" disabled={submitting}>
+        <button type="submit" className="btn btn-primary btn-block" disabled={submitting}>
           {submitting ? "Recording…" : "Record payment"}
         </button>
       </form>
 
       {result && (
-        <div className={result.kind === "success" ? "notice" : "error"} role="status">
+        <div className={`alert ${result.kind === "success" ? "alert-success" : "alert-error"}`} role="status">
           {result.message}
           {result.details && (
             <ul>

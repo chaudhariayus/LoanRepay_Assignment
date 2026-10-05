@@ -1,35 +1,30 @@
 import { formatDate, formatINR } from "@/lib/format";
 
 export default function PaymentHistory({ payments }) {
-  if (!payments.length) return null;
-
   return (
-    <section>
+    <section className="card">
       <h2>Payments received</h2>
-      <div className="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Paid on</th>
-              <th className="num">Amount</th>
-              <th>Allocated to</th>
-            </tr>
-          </thead>
-          <tbody>
-            {payments.map((p) => (
-              <tr key={p.id}>
-                <td>{formatDate(p.paidOn)}</td>
-                <td className="num">{formatINR(p.amount)}</td>
-                <td className="small">
-                  {p.allocations
-                    .map((a) => `#${a.seq}: ${formatINR(a.interest)} interest + ${formatINR(a.principal)} principal`)
-                    .join(" · ")}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {payments.length === 0 ? (
+        <p className="muted small">No payments yet.</p>
+      ) : (
+        <ul className="history">
+          {[...payments].reverse().map((p) => (
+            <li key={p.id}>
+              <div className="history-top">
+                <strong>{formatINR(p.amount)}</strong>
+                <span className="muted small">{formatDate(p.paidOn)}</span>
+              </div>
+              <ul className="history-split">
+                {p.allocations.map((a) => (
+                  <li key={a.seq}>
+                    #{a.seq} · {formatINR(a.interest)} interest + {formatINR(a.principal)} principal
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }

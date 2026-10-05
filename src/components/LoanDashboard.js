@@ -2,16 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/apiClient";
-import { formatDate, formatINR, isPositive } from "@/lib/format";
+import Brand from "./Brand";
+import LoanOverview from "./LoanOverview";
+import LoanPicker from "./LoanPicker";
 import PaymentForm from "./PaymentForm";
 import PaymentHistory from "./PaymentHistory";
 import PositionSummary from "./PositionSummary";
 import ScheduleTable from "./ScheduleTable";
-
-function loanLabel(loan) {
-  const overdue = isPositive(loan.position.overdue.amount) ? " · OVERDUE" : "";
-  return `${formatINR(loan.principal)} · ${loan.annualRatePercent}% · ${loan.tenureMonths} months · from ${formatDate(loan.disbursementDate)}${overdue}`;
-}
 
 export default function LoanDashboard({ user, onSignOut }) {
   const [loans, setLoans] = useState(null);
@@ -54,51 +51,58 @@ export default function LoanDashboard({ user, onSignOut }) {
   return (
     <div className="page">
       <header className="topbar">
-        <strong>Vitto Loan Repayment</strong>
-        <span className="topbar-user">
-          <span className="muted small">{user.email}</span>
-          <button className="secondary" onClick={onSignOut}>
-            Sign out
-          </button>
-        </span>
+        <div className="topbar-inner">
+          <Brand />
+          <div className="topbar-user">
+            <span className="avatar" aria-hidden="true">
+              {(user.email ?? "?").charAt(0).toUpperCase()}
+            </span>
+            <span className="topbar-email">{user.email}</span>
+            <button className="btn btn-ghost" onClick={onSignOut}>
+              Sign out
+            </button>
+          </div>
+        </div>
       </header>
 
       <main className="content">
-        {error && <p className="error" role="alert">{error}</p>}
-
-        {loans === null && !error && <p className="muted">Loading loans…</p>}
-        {loans?.length === 0 && <p className="muted">No loans yet. Create one with POST /api/loans or run the seed script.</p>}
-
-        {loans?.length > 0 && (
-          <label className="picker">
-            Loan
-            <select value={selectedId ?? ""} onChange={(e) => setSelectedId(e.target.value)}>
-              {loans.map((loan) => (
-                <option key={loan.id} value={loan.id}>
-                  {loanLabel(loan)}
-                </option>
-              ))}
-            </select>
-          </label>
+        {error && (
+          <p className="alert alert-error" role="alert">
+            {error}
+          </p>
         )}
 
-        {selectedId && !current && !error && <p className="muted">Loading loan…</p>}
+        {loans === null && !error && <div className="skeleton" aria-label="Loading loans" />}
+        {loans?.length === 0 && (
+          <div className="card empty">
+            <h2>No loans yet</h2>
+            <p className="muted">Create one with POST /api/loans or run npm run db:seed.</p>
+          </div>
+        )}
+
+        {loans?.length > 0 && <LoanPicker loans={loans} selectedId={selectedId} onSelect={setSelectedId} />}
+
+        {selectedId && !current && !error && <div className="skeleton tall" aria-label="Loading loan" />}
 
         {current && (
           <>
-            <p className="muted small">
-              EMI {formatINR(current.loan.emi)} · Loan ID <code>{current.loan.id}</code>
-            </p>
-            <PositionSummary loan={current.loan} position={current.position} />
-            <PaymentForm
-              key={current.loan.id}
-              user={user}
-              loan={current.loan}
-              position={current.position}
-              onPaid={handlePaid}
-            />
-            <ScheduleTable schedule={current.schedule} />
-            <PaymentHistory payments={current.payments} />
+            <LoanOverview loan={current.loan} position={current.position} schedule={current.schedule} />
+            <PositionSummary position={current.position} />
+            <div className="layout">
+              <aside className="side">
+                <PaymentForm
+                  key={current.loan.id}
+                  user={user}
+                  loan={current.loan}
+                  position={current.position}
+                  onPaid={handlePaid}
+                />
+                <PaymentHistory payments={current.payments} />
+              </aside>
+              <div className="main-col">
+                <ScheduleTable schedule={current.schedule} />
+              </div>
+            </div>
           </>
         )}
       </main>
