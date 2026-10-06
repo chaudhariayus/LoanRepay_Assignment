@@ -1,5 +1,5 @@
 import { UnauthenticatedError } from "./errors.js";
-import { getAdminAuth } from "./firebaseAdmin.js";
+import { FirebaseConfigError, verifyFirebaseIdToken } from "./firebaseToken.js";
 
 const BEARER_RE = /^Bearer\s+(\S+)$/i;
 
@@ -9,11 +9,10 @@ export async function requireUser(request) {
   const match = BEARER_RE.exec(request.headers.get("authorization") ?? "");
   if (!match) throw new UnauthenticatedError("Missing bearer token");
 
-  const auth = getAdminAuth(); // config errors surface as 500, not 401
   try {
-    const decoded = await auth.verifyIdToken(match[1]);
-    return { uid: decoded.uid, email: decoded.email ?? null };
-  } catch {
+    return await verifyFirebaseIdToken(match[1]);
+  } catch (error) {
+    if (error instanceof FirebaseConfigError) throw error; // config problem -> 500
     throw new UnauthenticatedError("Invalid or expired token");
   }
 }

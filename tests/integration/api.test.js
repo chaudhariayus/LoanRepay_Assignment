@@ -2,13 +2,12 @@ import { afterAll, describe, expect, it, vi } from "vitest";
 
 // Only Google's token signature check is stubbed, so the tests need no live
 // Firebase login. requireUser, the route handlers and Postgres are all real.
-vi.mock("@/lib/firebaseAdmin", () => ({
-  getAdminAuth: () => ({
-    verifyIdToken: async (token) => {
-      if (token === "valid-test-token") return { uid: "test-user", email: "test@example.com" };
-      throw new Error("invalid token");
-    },
-  }),
+vi.mock("@/lib/firebaseToken", () => ({
+  FirebaseConfigError: class FirebaseConfigError extends Error {},
+  verifyFirebaseIdToken: async (token) => {
+    if (token === "valid-test-token") return { uid: "test-user", email: "test@example.com" };
+    throw new Error("invalid token");
+  },
 }));
 
 const { POST: createLoan } = await import("@/app/api/loans/route");

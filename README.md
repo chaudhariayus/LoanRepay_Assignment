@@ -21,7 +21,7 @@ Positions move with the calendar: an unpaid instalment becomes overdue the day a
 
 ## Stack, database and host
 
-Next.js 16 (App Router, route handlers) · React 19 · PostgreSQL on **Neon** · Prisma 6 · Firebase Authentication (email/password; ID tokens verified server-side with `firebase-admin`) · Vitest · GitHub Actions · hosted on **Vercel**.
+Next.js 16 (App Router, route handlers) · React 19 · PostgreSQL on **Neon** · Prisma 6 · Firebase Authentication (email/password; ID tokens verified server-side with `jose` against Google's public keys: RS256 signature, issuer, audience, expiry) · Vitest · GitHub Actions · hosted on **Vercel**.
 
 The schema is created only by Prisma migrations (`prisma/migrations`), applied by `npm run build` and in CI. A hand-written migration adds CHECK constraints (amounts > 0, principal ₹50,000–₹10,00,000, tenure 3–36, paid ≤ due). `payments.loan_id` is `NOT NULL` with a foreign key `ON DELETE RESTRICT`, so a payment cannot exist without its loan.
 
