@@ -2,7 +2,7 @@
 
 Next.js (JavaScript) app that generates an EMI repayment schedule, records payments against it and reports the loan's position at any date.
 
-**Live:** _LIVE_URL_ · **Test account:** sent in the submission email · **CI:** [GitHub Actions](https://github.com/chaudhariayus/Vitto_Assignment/actions)
+**Live:** https://vitto-assignment-theta.vercel.app · **Test account:** sent in the submission email · **CI:** [GitHub Actions](https://github.com/chaudhariayus/Vitto_Assignment/actions)
 
 ## Seeded loans
 
